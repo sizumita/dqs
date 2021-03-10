@@ -11,14 +11,14 @@ defmodule Dqs.Command.Close do
   def handle(msg) do
     question = get_current_question(msg.channel_id)
 
-    with {:ok, question} <- close_question(question),
-         {:ok, _message} <- update_info_message(question),
-         {:ok, _channel} <- edit_channel(msg.channel_id)
+    with {:ok, _channel} <- edit_channel(msg.channel_id),
+         {:ok, question} <- close_question(question),
+         {:ok, _message} <- update_info_message(question)
     do
       Nostrum.Api.create_message(msg.channel_id, "closeされました。")
     else
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
-          Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{retry_after/60}秒後に再度行ってください。/)
+          Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
       _ -> Nostrum.Api.create_message(msg.channel_id, "なんらかの理由でcloseできませんでした。再度お試しください。")
     end
   end
