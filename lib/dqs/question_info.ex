@@ -6,5 +6,7 @@ defmodule Dqs.QuestionInfo do
     field :original_message_id, :integer
     field :info_message_id, :integer
     belongs_to :question, Dqs.Question
+
+    timestamps()
   end
 end
