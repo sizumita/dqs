@@ -1,4 +1,4 @@
-import Config
+use Mix.Config
 
 
 config :nostrum,
@@ -9,3 +9,15 @@ config :nostrum,
          :guild_members,
          :guild_messages
        ]
+
+
+config :dqs, ecto_repos: [Dqs.Repo]
+
+config :dqs, Dqs.Repo,
+       database: "dqs",
+       username: "postgres",
+       password: "postgres",
+       hostname: "0.0.0.0",
+       show_sensitive_data_on_connection_error: true,
+       pool_size: 10
+
