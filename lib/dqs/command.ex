@@ -35,6 +35,25 @@ defmodule Dqs.Command do
     end
   end
 
+  def handle(%{content: @prefix <> "help"} = msg) do
+    content = ~s/
+```
+#{@prefix}help -> このメッセージを表示します。
+
+#{@prefix}create [タイトル] -> 新しく質問を作成します。
+
+#{@prefix}title [タイトル] -> タイトルを新しく設定します。
+#{@prefix}content [内容] -> 質問の内容を設定します。
+(返信つきで) #{@prefix}content -> 返信元のメッセージを質問の内容として設定します。
+#{@prefix}tag add [タグ] -> タグを追加します。タグは半角の空白で区切って複数指定できます。
+#{@prefix}tag remove [タグ] -> タグを削除します。タグは半角の空白で区切って複数指定できます。
+
+#{@prefix}close -> 質問を終了します。
+```
+/
+    Nostrum.Api.create_message(msg.channel_id, content)
+  end
+
   def handle(_msg) do
     :noop
   end
