@@ -7,7 +7,8 @@ defmodule Dqs.Application do
 
   def start(_type, _args) do
     children = [
-      Dqs.Consumer
+      Dqs.Consumer,
+      Dqs.Repo
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
