@@ -1,33 +1,41 @@
 defmodule Dqs.Command.Create do
   alias Dqs.Repo
   import Nostrum.Struct.Embed
+  alias Dqs.Cache
 
   @prefix System.get_env("PREFIX")
-  @guild_id System.get_env("GUILD_ID") |> String.to_integer
-  @open_category_id System.get_env("OPEN_CATEGORY_ID") |> String.to_integer
-  @closed_category_id System.get_env("CLOSED_CATEGORY_ID") |> String.to_integer
-  @board_channel_id System.get_env("QUESTION_BOARD_CHANNEL_ID") |> String.to_integer
+  @guild_id System.get_env("GUILD_ID")
+            |> String.to_integer
+  @open_category_id System.get_env("OPEN_CATEGORY_ID")
+                    |> String.to_integer
+  @closed_category_id System.get_env("CLOSED_CATEGORY_ID")
+                      |> String.to_integer
+  @board_channel_id System.get_env("QUESTION_BOARD_CHANNEL_ID")
+                    |> String.to_integer
 
   def handle(%{content: @prefix <> "create " <> name} = msg) do
     {:ok, channels} = Nostrum.Api.get_guild_channels(msg.guild_id)
-    closed_channels = channels |> Enum.filter(fn channel -> channel.parent_id == @closed_category_id end)
+    closed_channels = channels
+                      |> Enum.filter(fn channel -> channel.parent_id == @closed_category_id end)
     case closed_channels do
       [] -> send_message msg, "空きチャンネルがありません。管理者にご連絡ください。"
       [first | _rest] ->
-        Repo.transaction(fn ->
-          with {:ok} <- check_duplicate(first),
-          {:ok, question} <- create_question(msg, name, first),
-          {:ok, question_message} <- send_question_message(msg, name, question, first),
-          {:ok, channel} <- edit_channel(msg, name, first),
-          {:ok, info_message} <- send_info_message(msg, question_message, name, question, first),
-          {:ok, question_info} <- create_question_info(question_message, question, info_message)
-          do
-            send_notice_message(msg, first)
-          else
-            {:error, e} -> send_message(msg, "エラーが発生しました。再度お試しください。")
-                Repo.rollback(e)
+        Repo.transaction(
+          fn ->
+            with {:ok} <- check_duplicate(first),
+                 {:ok, question} <- create_question(msg, name, first),
+                 {:ok, question_message} <- send_question_message(msg, name, question, first),
+                 {:ok, channel} <- edit_channel(msg, name, first),
+                 {:ok, info_message} <- send_info_message(msg, question_message, name, question, first),
+                 {:ok, question_info} <- create_question_info(question_message, question, info_message)
+              do
+              send_notice_message(msg, first)
+            else
+              {:error, e} -> send_message(msg, "エラーが発生しました。再度お試しください。")
+                             Repo.rollback(e)
+            end
           end
-        end)
+        )
     end
   end
 
@@ -54,22 +62,23 @@ defmodule Dqs.Command.Create do
 
   def send_question_message(msg, name, question, alloc_channel) do
     embed = %Nostrum.Struct.Embed{}
-    |> put_title("新しい質問: " <> name)
-    |> put_author(~s/ID:#{question.id}/, "", "")
-    |> put_field("投稿者", ~s/#{msg.author.username}##{msg.author.discriminator} (<@#{msg.author.id}>)/)
+            |> put_title("新しい質問: " <> name)
+            |> put_author(~s/ID:#{question.id}/, "", "")
+            |> put_field("投稿者", ~s/#{msg.author.username}##{msg.author.discriminator} (<@#{msg.author.id}>)/)
 
     Nostrum.Api.create_message(alloc_channel.id, embed: embed)
   end
 
   def send_info_message(msg, question_message, name, question, alloc_channel) do
-    IO.inspect msg
-    embed = %Nostrum.Struct.Embed{}
-    |> put_title(name)
-    |> put_author(~s/ID:#{question.id}/, "", "")
-    |> put_description(if question.content == nil, do: "なし", else: question.content)
-    |> put_field("投稿者", ~s/#{msg.author.username}##{msg.author.discriminator} (<@#{msg.author.id}>)/)
-    |> put_field("リンク", ~s/[最初のメッセージ](https:\/\/discord.com\/channels\/#{@guild_id}\/#{question_message.channel_id}\/#{question_message.id})/)
-
+    embed = Dqs.Embed.make_info_embed(
+      msg.author,
+      question,
+      %Dqs.QuestionInfo{
+        original_message_id: question_message.id,
+        info_message_id: 0,
+        question: question
+      }
+    )
     Nostrum.Api.create_message(@board_channel_id, embed: embed)
   end
 
@@ -78,7 +87,8 @@ defmodule Dqs.Command.Create do
       original_message_id: msg.id,
       info_message_id: info_message.id,
       question: question
-    } |> Repo.insert()
+    }
+    |> Repo.insert()
   end
 
   def create_question(msg, name, alloc_channel) do
