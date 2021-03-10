@@ -28,7 +28,7 @@ defmodule Dqs.Command.Modify do
     question =
       from(
         question in Dqs.Question,
-        where: question.channel_id == ^channel_id,
+        where: question.channel_id == ^channel_id and question.status == "open",
         preload: [:info],
         select: question
       )
@@ -40,6 +40,8 @@ defmodule Dqs.Command.Modify do
       do
       send_message(msg, "変更しました。")
     else
+      {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
+        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
       _ -> send_message(msg, "アップデートができませんでした。再度お試しください。")
     end
   end
@@ -67,7 +69,7 @@ defmodule Dqs.Command.Modify do
     question =
       from(
         question in Dqs.Question,
-        where: question.channel_id == ^channel_id,
+        where: question.channel_id == ^channel_id and question.status == "open",
         preload: [:info],
         select: question
       )
@@ -78,6 +80,8 @@ defmodule Dqs.Command.Modify do
       do
       send_message(msg, "変更しました。")
     else
+      {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
+        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
       _error -> send_message(msg, "アップデートができませんでした。再度お試しください。")
     end
   end
