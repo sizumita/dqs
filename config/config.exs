@@ -15,9 +15,8 @@ config :dqs, ecto_repos: [Dqs.Repo]
 
 config :dqs, Dqs.Repo,
        database: "dqs",
-       username: "postgres",
-       password: "postgres",
+       username: System.get_env("POSTGRES_USER"),
+       password: System.get_env("POSTGRES_PASSWORD"),
        hostname: "0.0.0.0",
-       show_sensitive_data_on_connection_error: true,
        pool_size: 10
 
