@@ -43,6 +43,7 @@
       <excludeFolder url="file://$MODULE_DIR$/doc" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />
     </content>
+    <orderEntry type="jdk" jdkName="Elixir 1.11.1" jdkType="Elixir SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="nostrum" level="project" />
     <orderEntry type="library" name="httpoison" level="project" />
