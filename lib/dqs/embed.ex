@@ -15,6 +15,7 @@ defmodule Dqs.Embed do
            info.original_message_id
          })/
        )
+    |> put_field("タグ", if(question.tag == [], do: "なし", else: question.tag |> Enum.join(", ")))
     |> put_color(color)
   end
 end
