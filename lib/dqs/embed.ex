@@ -3,7 +3,7 @@ defmodule Dqs.Embed do
   @guild_id System.get_env("GUILD_ID")
             |> String.to_integer
 
-  def make_info_embed(user, question, info) do
+  def make_info_embed(user, question, info, color \\ 0x12e327) do
     %Nostrum.Struct.Embed{}
     |> put_title(question.name)
     |> put_author(~s/ID:#{question.id}/, "", "")
@@ -15,5 +15,6 @@ defmodule Dqs.Embed do
            info.original_message_id
          })/
        )
+    |> put_color(color)
   end
 end
