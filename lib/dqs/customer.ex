@@ -3,13 +3,14 @@ defmodule Dqs.Consumer do
 
   alias Dqs.Command
   alias Nostrum.Api
+  @prefix System.get_env("PREFIX")
 
   def start_link do
     Consumer.start_link(__MODULE__)
   end
 
-  def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
-    Command.on_message(msg)
+  def handle_event({:MESSAGE_CREATE, %{author: %{bot: nil}, content: @prefix <> _command} = msg, _ws_state}) do
+    Command.handle(msg)
   end
 
   def handle_event(_event) do
