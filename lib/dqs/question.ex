@@ -9,6 +9,7 @@ defmodule Dqs.Question do
     field :status, :string
     field :channel_id, :integer
     field :tag, {:array, :string}, default: []
+    has_one :info, Dqs.QuestionInfo
 
     timestamps()
   end
