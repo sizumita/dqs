@@ -44,7 +44,7 @@ defmodule Dqs.Command.Tag do
   def get_current_question(channel_id) do
     from(
       question in Dqs.Question,
-      where: question.channel_id == ^channel_id,
+      where: question.channel_id == ^channel_id and question.status == "open",
       preload: [:info],
       select: question
     )

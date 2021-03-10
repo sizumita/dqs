@@ -26,6 +26,15 @@ defmodule Dqs.Command do
     end
   end
 
+  def handle(%{content: @prefix <> "close"} = msg) do
+    {:ok, channel} = Cache.get_channel(msg.channel_id)
+    if channel.parent_id == @open_category_id do
+      Dqs.Command.Close.handle(msg)
+    else
+      create_message(msg.channel_id, "このチャンネルでは使用できません。")
+    end
+  end
+
   def handle(_msg) do
     :noop
   end

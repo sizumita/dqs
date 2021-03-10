@@ -17,21 +17,27 @@ defmodule Dqs.Command.Create do
     {:ok, channels} = Nostrum.Api.get_guild_channels(msg.guild_id)
     closed_channels = channels
                       |> Enum.filter(fn channel -> channel.parent_id == @closed_category_id end)
-    case closed_channels do
-      [] -> send_message msg, "空きチャンネルがありません。管理者にご連絡ください。"
-      [first | _rest] ->
+    try_transaction(msg, closed_channels, name)
+  end
+
+  def try_transaction(msg, channels, name) do
+    case channels do
+      [] -> send_message msg, "空きチャンネルがないか、操作可能なチャンネルがありません。管理者にご連絡ください。"
+      [first | rest] ->
         Repo.transaction(
           fn ->
             with {:ok} <- check_duplicate(first),
+                 {:ok, channel} <- edit_channel(msg, name, first),
                  {:ok, question} <- create_question(msg, name, first),
                  {:ok, question_message} <- send_question_message(msg, name, question, first),
-                 {:ok, channel} <- edit_channel(msg, name, first),
                  {:ok, info_message} <- send_info_message(msg, question_message, name, question, first),
                  {:ok, question_info} <- create_question_info(question_message, question, info_message)
               do
               send_notice_message(msg, first)
             else
+              {:error, %Nostrum.Error.ApiError{status_code: 429}} -> try_transaction(msg, rest, name)
               {:error, e} -> send_message(msg, "エラーが発生しました。再度お試しください。")
+                             IO.inspect e
                              Repo.rollback(e)
             end
           end
@@ -40,7 +46,8 @@ defmodule Dqs.Command.Create do
   end
 
   def edit_channel(msg, name, alloc_channel) do
-    Nostrum.Api.modify_channel(alloc_channel.id, name: name, parent_id: @open_category_id)
+    {:ok, parent_channel} = Dqs.Cache.get_channel(@open_category_id)
+    Nostrum.Api.modify_channel(alloc_channel.id, name: name, parent_id: @open_category_id, permission_overwrites: parent_channel.permission_overwrites)
   end
 
   def check_duplicate(alloc_channel) do
