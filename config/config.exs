@@ -3,7 +3,7 @@ import Config
 
 config :nostrum,
        token: System.get_env("BOT_TOKEN"),
-       num_shards: :auto,
+       num_shards: 2,
        gateway_intents: [
          :guilds,
          :guild_members,

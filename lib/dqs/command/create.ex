@@ -13,7 +13,7 @@ defmodule Dqs.Command.Create do
   @board_channel_id System.get_env("QUESTION_BOARD_CHANNEL_ID")
                     |> String.to_integer
 
-  def handle(%{content: @prefix <> "create " <> name} = msg) do
+  def handle_message(%{content: name} = msg) do
     {:ok, channels} = Nostrum.Api.get_guild_channels(msg.guild_id)
     closed_channels = channels
                       |> Enum.filter(fn channel -> channel.parent_id == @closed_category_id end)
