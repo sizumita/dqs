@@ -1,4 +1,4 @@
-defmodule Dqs.Command.Close do
+defmodule Dqs.Command.Trash do
   alias Dqs.Repo
   import Ecto.Query
 
@@ -12,29 +12,20 @@ defmodule Dqs.Command.Close do
     question = get_current_question(msg.channel_id)
 
     with {:ok, _channel} <- edit_channel(msg.channel_id),
-         {:ok, question} <- close_question(question),
-         {:ok, _message} <- update_info_message(question)
-    do
+         {:ok, question} <- trash_question(question),
+         {:ok} <- delete_info_message(question)
+      do
       Nostrum.Api.create_message(msg.channel_id, "closeされました。")
     else
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
-          Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
-      _ -> Nostrum.Api.create_message(msg.channel_id, "なんらかの理由でcloseできませんでした。再度お試しください。")
+        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
+      e -> Nostrum.Api.create_message(msg.channel_id, "なんらかの理由でcloseできませんでした。再度お試しください。")
+           IO.inspect(e)
     end
   end
 
-  def update_info_message(question) do
-    info = question.info
-    {:ok, user} = Cache.get_user(question.issuer_id)
-    Nostrum.Api.edit_message(
-      @board_channel_id,
-      info.info_message_id,
-      embed: Dqs.Embed.make_info_embed(user, question, question.info, 0xff3333)
-    )
-  end
-
-  def close_question(question) do
-    question |> Ecto.Changeset.change(status: "closed") |> Repo.update
+  def delete_info_message(question) do
+    Nostrum.Api.delete_message(@board_channel_id, question.info.info_message_id)
   end
 
   def get_current_question(channel_id) do
@@ -45,6 +36,10 @@ defmodule Dqs.Command.Close do
       select: question
     )
     |> Repo.one()
+  end
+
+  def trash_question(question) do
+    question |> Ecto.Changeset.change(status: "erased") |> Repo.update
   end
 
   def edit_channel(channel_id) do
