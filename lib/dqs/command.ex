@@ -4,10 +4,6 @@ defmodule Dqs.Command do
   @open_category_id System.get_env("OPEN_CATEGORY_ID")
                     |> String.to_integer
 
-  def handle(%{content: @prefix <> "create " <> _name} = msg) do
-    Dqs.Command.Create.handle(msg)
-  end
-
   def handle(%{content: @prefix <> "set " <> _} = msg) do
     {:ok, channel} = Cache.get_channel(msg.channel_id)
     if channel.parent_id == @open_category_id do
@@ -40,7 +36,7 @@ defmodule Dqs.Command do
 ```
 #{@prefix}help -> このメッセージを表示します。
 
-#{@prefix}create [タイトル] -> 新しく質問を作成します。
+<##{System.get_env("QUESTION_CHANNEL_ID")}>に質問のタイトルを投稿すると、自動的に質問チャンネルが作成されます。
 
 #{@prefix}title [タイトル] -> タイトルを新しく設定します。
 #{@prefix}content [内容] -> 質問の内容を設定します。
