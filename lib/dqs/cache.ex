@@ -1,8 +1,6 @@
 defmodule Dqs.Cache do
   alias Nostrum.Cache.{ChannelCache, GuildCache, UserCache}
   alias Nostrum.Api
-  alias Nostrum.Struct.User
-  alias Nostrum.Struct.Channel
   import Nostrum.Snowflake, only: [is_snowflake: 1]
 
   defp get_cached_with_fallback(id, cache, api) do

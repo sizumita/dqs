@@ -1,6 +1,5 @@
 defmodule Dqs.QuestionInfo do
   use Ecto.Schema
-  import Ecto.Changeset
 
   schema "question_info" do
     field :original_message_id, :integer
