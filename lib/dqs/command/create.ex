@@ -1,11 +1,8 @@
 defmodule Dqs.Command.Create do
   alias Dqs.Repo
   import Nostrum.Struct.Embed
-  alias Dqs.Cache
 
   @prefix System.get_env("PREFIX")
-  @guild_id System.get_env("GUILD_ID")
-            |> String.to_integer
   @open_category_id System.get_env("OPEN_CATEGORY_ID")
                     |> String.to_integer
   @closed_category_id System.get_env("CLOSED_CATEGORY_ID")
@@ -27,11 +24,11 @@ defmodule Dqs.Command.Create do
         Repo.transaction(
           fn ->
             with {:ok} <- check_duplicate(first),
-                 {:ok, channel} <- edit_channel(msg, name, first),
+                 {:ok, _channel} <- edit_channel(name, first),
                  {:ok, question} <- create_question(msg, name, first),
                  {:ok, question_message} <- send_question_message(msg, name, question, first),
-                 {:ok, info_message} <- send_info_message(msg, question_message, name, question, first),
-                 {:ok, question_info} <- create_question_info(question_message, question, info_message)
+                 {:ok, info_message} <- send_info_message(msg, question_message, question),
+                 {:ok, _question_info} <- create_question_info(question_message, question, info_message)
               do
               send_notice_message(msg, first)
             else
@@ -45,7 +42,7 @@ defmodule Dqs.Command.Create do
     end
   end
 
-  def edit_channel(msg, name, alloc_channel) do
+  def edit_channel(name, alloc_channel) do
     {:ok, parent_channel} = Dqs.Cache.get_channel(@open_category_id)
     Nostrum.Api.modify_channel(alloc_channel.id, name: name, parent_id: @open_category_id, permission_overwrites: parent_channel.permission_overwrites)
   end
@@ -76,7 +73,7 @@ defmodule Dqs.Command.Create do
     Nostrum.Api.create_message(alloc_channel.id, embed: embed)
   end
 
-  def send_info_message(msg, question_message, name, question, alloc_channel) do
+  def send_info_message(msg, question_message, question) do
     embed = Dqs.Embed.make_info_embed(
       msg.author,
       question,

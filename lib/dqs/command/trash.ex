@@ -2,7 +2,6 @@ defmodule Dqs.Command.Trash do
   alias Dqs.Repo
   import Ecto.Query
 
-  alias Dqs.Cache
   @board_channel_id System.get_env("QUESTION_BOARD_CHANNEL_ID")
                     |> String.to_integer
   @closed_category_id System.get_env("CLOSED_CATEGORY_ID")
