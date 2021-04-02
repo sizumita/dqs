@@ -40,6 +40,11 @@ defmodule Dqs.Command do
     end
   end
 
+  def handle(%{content: @prefix <> "find" <> _} = msg) do
+    IO.inspect "find"
+    Dqs.Command.Search.handle(msg)
+  end
+
   def handle(%{content: @prefix <> "help"} = msg) do
     content = ~s/
 ```
