@@ -14,7 +14,7 @@ defmodule Dqs.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :cachex],
       mod: {Dqs.Application, []}
     ]
   end
@@ -26,7 +26,8 @@ defmodule Dqs.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:nostrum, git: "https://github.com/Kraigie/nostrum.git"},
       {:ecto_sql, "~> 3.4"},
-      {:postgrex, ">= 0.0.0"}
+      {:postgrex, ">= 0.0.0"},
+      {:cachex, "~> 3.3"}
     ]
   end
 end
