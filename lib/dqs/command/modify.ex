@@ -34,15 +34,19 @@ defmodule Dqs.Command.Modify do
       )
       |> Repo.one()
       |> Ecto.Changeset.change(name: title)
-    with {:ok, question} <- do_update(question),
+    with false <- Dqs.Ratelimit.ratelimit?(msg.channel_id),
+         {:ok, question} <- do_update(question),
          {:ok, _channel} <- update_channel_name(msg, question),
          {:ok, _message} <- update_info_message(question)
       do
       send_message(msg, "変更しました。")
     else
+      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりcloseできませんでした。しばらく経ってから再度お試しください。")
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
         Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
-      _ -> send_message(msg, "アップデートができませんでした。再度お試しください。")
+        Dqs.Ratelimit.wait_ratelimit(msg.channel_id, retry_after)
+      e -> send_message(msg, "アップデートができませんでした。再度お試しください。")
+           IO.inspect(e)
     end
   end
 
@@ -80,6 +84,7 @@ defmodule Dqs.Command.Modify do
       do
       send_message(msg, "変更しました。")
     else
+      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりcloseできませんでした。しばらく経ってから再度お試しください。")
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
         Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
       _error -> send_message(msg, "アップデートができませんでした。再度お試しください。")

@@ -8,7 +8,8 @@ defmodule Dqs.Application do
   def start(_type, _args) do
     children = [
       Dqs.Consumer,
-      Dqs.Repo
+      Dqs.Repo,
+      {Cachex, name: :ratelimit}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
