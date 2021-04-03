@@ -1,5 +1,7 @@
 defmodule Dqs.Command do
   alias Dqs.Cache
+  alias Nostrum.Cache.GuildCache
+  alias Nostrum.Struct.Guild.Member
   @prefix System.get_env("PREFIX")
   @open_category_id System.get_env("OPEN_CATEGORY_ID")
                     |> String.to_integer
@@ -32,11 +34,18 @@ defmodule Dqs.Command do
   end
 
   def handle(%{content: @prefix <> "trash"} = msg) do
-    {:ok, channel} = Cache.get_channel(msg.channel_id)
-    if channel.parent_id == @open_category_id do
-      Dqs.Command.Trash.handle(msg)
+    guild = GuildCache.get!(msg.guild_id)
+    member = Map.get(guild.members, msg.author.id)
+    member_perms = Member.guild_permissions(member, guild)
+    if :manage_channels in member_perms do
+      {:ok, channel} = Cache.get_channel(msg.channel_id)
+      if channel.parent_id == @open_category_id do
+        Dqs.Command.Trash.handle(msg)
+      else
+        create_message(msg.channel_id, "このチャンネルでは使用できません。")
+      end
     else
-      create_message(msg.channel_id, "このチャンネルでは使用できません。")
+      create_message(msg.channel_id, ~s/<@#{msg.author.id}>, チャンネル管理権限を持っていないため使用できません。/)
     end
   end
 
