@@ -15,6 +15,15 @@ defmodule Dqs.Command.Search do
     Nostrum.Api.create_message(msg.channel_id, embed: make_embed(Repo.all(query), tags_text))
   end
 
+  def handle(%{content: @prefix <> "find " <> text} = msg) do
+    query = from(
+      p in Dqs.Question,
+      preload: [:info],
+      where: fragment("name &@~ ?", ^text)
+    )
+    Nostrum.Api.create_message(msg.channel_id, embed: make_embed(Repo.all(query), text))
+  end
+
   def make_embed(questions, tags_text) do
     text = questions
       |> Enum.reduce("",
