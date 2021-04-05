@@ -35,8 +35,8 @@ defmodule Dqs.Command.Modify do
       |> Ecto.Changeset.change(name: title)
     with false <- Dqs.Ratelimit.ratelimit?(msg.channel_id),
          {:ok, _channel} <- update_channel_name(msg, title),
-         {:ok, _message} <- update_info_message(question),
-         {:ok, question} <- do_update(question)
+         {:ok, question} <- do_update(question),
+         {:ok, _message} <- update_info_message(question)
       do
       send_message(msg, "変更しました。")
     else
