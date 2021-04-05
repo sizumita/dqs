@@ -34,7 +34,7 @@ defmodule Dqs.Command.Modify do
       |> Repo.one()
       |> Ecto.Changeset.change(name: title)
     with false <- Dqs.Ratelimit.ratelimit?(msg.channel_id),
-         {:ok, _channel} <- update_channel_name(msg, question),
+         {:ok, _channel} <- update_channel_name(msg, title),
          {:ok, _message} <- update_info_message(question),
          {:ok, question} <- do_update(question)
       do
@@ -53,8 +53,8 @@ defmodule Dqs.Command.Modify do
     Nostrum.Api.create_message(msg.channel_id, content)
   end
 
-  def update_channel_name(msg, question) do
-    Nostrum.Api.modify_channel(msg.channel_id, name: question.name)
+  def update_channel_name(msg, title) do
+    Nostrum.Api.modify_channel(msg.channel_id, name: title)
   end
 
   def update_info_message(question) do
