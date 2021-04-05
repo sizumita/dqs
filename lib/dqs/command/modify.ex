@@ -4,9 +4,8 @@ defmodule Dqs.Command.Modify do
 
   alias Dqs.Cache
 
-  @prefix System.get_env("PREFIX")
-  @board_channel_id System.get_env("QUESTION_BOARD_CHANNEL_ID")
-                    |> String.to_integer
+  @prefix Application.get_env(:dqs, :prefix)
+  @board_channel_id Application.get_env(:dqs, :board_channel_id)
 
   def handle(%{content: @prefix <> "set title " <> title} = msg) do
     set_title(msg, title)
@@ -35,15 +34,15 @@ defmodule Dqs.Command.Modify do
       |> Repo.one()
       |> Ecto.Changeset.change(name: title)
     with false <- Dqs.Ratelimit.ratelimit?(msg.channel_id),
-         {:ok, question} <- do_update(question),
          {:ok, _channel} <- update_channel_name(msg, question),
-         {:ok, _message} <- update_info_message(question)
+         {:ok, _message} <- update_info_message(question),
+         {:ok, question} <- do_update(question)
       do
       send_message(msg, "変更しました。")
     else
-      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりcloseできませんでした。しばらく経ってから再度お試しください。")
+      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりアップデートできませんでした。しばらく経ってから再度お試しください。")
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
-        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
+        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりアップデートできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
         Dqs.Ratelimit.wait_ratelimit(msg.channel_id, retry_after)
       e -> send_message(msg, "アップデートができませんでした。再度お試しください。")
            IO.inspect(e)
@@ -84,9 +83,9 @@ defmodule Dqs.Command.Modify do
       do
       send_message(msg, "変更しました。")
     else
-      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりcloseできませんでした。しばらく経ってから再度お試しください。")
+      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりアップデートできませんでした。しばらく経ってから再度お試しください。")
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
-        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
+        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりアップデートできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
       _error -> send_message(msg, "アップデートができませんでした。再度お試しください。")
     end
   end

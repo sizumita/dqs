@@ -2,13 +2,10 @@ defmodule Dqs.Command.Create do
   alias Dqs.Repo
   import Nostrum.Struct.Embed
 
-  @prefix System.get_env("PREFIX")
-  @open_category_id System.get_env("OPEN_CATEGORY_ID")
-                    |> String.to_integer
-  @closed_category_id System.get_env("CLOSED_CATEGORY_ID")
-                      |> String.to_integer
-  @board_channel_id System.get_env("QUESTION_BOARD_CHANNEL_ID")
-                    |> String.to_integer
+  @prefix Application.get_env(:dqs, :prefix)
+  @open_category_id Application.get_env(:dqs, :open_category_id)
+  @closed_category_id Application.get_env(:dqs, :closed_category_id)
+  @board_channel_id Application.get_env(:dqs, :board_channel_id)
 
   def handle_message(%{content: name} = msg) do
     {:ok, channels} = Nostrum.Api.get_guild_channels(msg.guild_id)

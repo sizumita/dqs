@@ -3,10 +3,8 @@ defmodule Dqs.Command.Close do
   import Ecto.Query
 
   alias Dqs.Cache
-  @board_channel_id System.get_env("QUESTION_BOARD_CHANNEL_ID")
-                    |> String.to_integer
-  @closed_category_id System.get_env("CLOSED_CATEGORY_ID")
-                      |> String.to_integer
+  @board_channel_id Application.get_env(:dqs, :board_channel_id)
+  @closed_category_id Application.get_env(:dqs, :closed_category_id)
 
   def handle(msg) do
     question = get_current_question(msg.channel_id)
