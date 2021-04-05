@@ -55,9 +55,9 @@ defmodule Dqs.Command.Create do
 
   def send_notice_message(msg, alloc_channel) do
     message = ~s/<@#{msg.author.id}>, 質問を作成しました。\n
-`#{@prefix}set content [質問の概要]`と送信するか、質問の概要を送信した後にリプライで`!set content`と入力すると質問内容を保存します。\n
+`#{@prefix}set content [質問の概要]`と送信するか、質問の概要を送信した後にリプライで`#{@prefix}set content`と入力すると質問内容を保存します。\n
 `#{@prefix}set title [タイトル]`でタイトルを変更できます。\n
-`!close`で質問を終了させることができます。\n以上の操作が難しい場合、他のユーザーに頼んでください。/
+`#{@prefix}close`で質問を終了させることができます。\n以上の操作が難しい場合、他のユーザーに頼んでください。/
     Nostrum.Api.create_message(alloc_channel.id, message)
   end
 
