@@ -55,10 +55,11 @@ defmodule Dqs.Command do
 
   def handle(%{content: @prefix <> "help"} = msg) do
     content = ~s/
+<##{System.get_env("QUESTION_CHANNEL_ID")}>に質問のタイトルを投稿すると、自動的に質問チャンネルが作成されます。
+
+コマンド一覧
 ```
 #{@prefix}help -> このメッセージを表示します。
-
-<##{System.get_env("QUESTION_CHANNEL_ID")}>に質問のタイトルを投稿すると、自動的に質問チャンネルが作成されます。
 
 #{@prefix}title [タイトル] -> タイトルを新しく設定します。
 #{@prefix}content [内容] -> 質問の内容を設定します。

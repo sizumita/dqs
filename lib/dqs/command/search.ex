@@ -2,8 +2,8 @@ defmodule Dqs.Command.Search do
   alias Dqs.Repo
   import Ecto.Query
   import Nostrum.Struct.Embed
-  @prefix System.get_env("PREFIX")
-  @guild_id System.get_env("GUILD_ID")
+  @prefix Application.get_env(:dqs, :prefix)
+  @guild_id Application.get_env(:dqs, :guild_id)
 
   def handle(%{content: @prefix <> "find tag " <> tags_text} = msg) do
     tags = tags_text |> String.split(" ") |> MapSet.new() |> MapSet.to_list()

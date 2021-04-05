@@ -3,9 +3,8 @@ defmodule Dqs.Command.Tag do
   import Ecto.Query
 
   alias Dqs.Cache
-  @prefix System.get_env("PREFIX")
-  @board_channel_id System.get_env("QUESTION_BOARD_CHANNEL_ID")
-                    |> String.to_integer
+  @prefix Application.get_env(:dqs, :prefix)
+  @board_channel_id Application.get_env(:dqs, :board_channel_id)
 
   def handle(%{content: @prefix <> "tag add " <> tags} = msg) do
     question = get_current_question(msg.channel_id)
