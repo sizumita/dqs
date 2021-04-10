@@ -3,8 +3,8 @@ defmodule Dqs.Consumer do
 
   alias Dqs.Command
   alias Nostrum.Api
-  @prefix System.get_env("PREFIX")
-  @question_channel_id String.to_integer(System.get_env("QUESTION_CHANNEL_ID"))
+  @prefix Application.get_env(:dqs, :prefix)
+  @question_channel_id Application.get_env(:dqs, :board_channel_id)
 
   def start_link do
     Consumer.start_link(__MODULE__)
