@@ -2,9 +2,8 @@ defmodule Dqs.Command do
   alias Dqs.Cache
   alias Nostrum.Cache.GuildCache
   alias Nostrum.Struct.Guild.Member
-  @prefix System.get_env("PREFIX")
-  @open_category_id System.get_env("OPEN_CATEGORY_ID")
-                    |> String.to_integer
+  @prefix Application.get_env(:dqs, :prefix)
+  @open_category_id Application.get_env(:dqs, :open_category_id)
 
   def handle(%{content: @prefix <> "set " <> _} = msg) do
     {:ok, channel} = Cache.get_channel(msg.channel_id)
