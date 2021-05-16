@@ -13,7 +13,7 @@ config :dqs, Dqs.Repo,
        database: "dqs",
        username: System.get_env("POSTGRES_USER"),
        password: System.get_env("POSTGRES_PASSWORD"),
-       hostname: "0.0.0.0",
+       hostname: System.get_env("POSTGRES_HOSTNAME"),
        pool_size: 10
 
 config :dqs, :board_channel_id, System.get_env("QUESTION_BOARD_CHANNEL_ID") |> String.to_integer

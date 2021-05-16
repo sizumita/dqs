@@ -18,6 +18,18 @@ defmodule Dqs.Consumer do
     Dqs.Command.Create.handle_message(msg)
   end
 
+  def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
+    case Cachex.get(:delay_close, to_string(msg.channel_id)) do
+      { :ok, nil } -> :noop
+      _ ->
+        Cachex.del(:delay_close, to_string(msg.channel_id))
+        {:ok, message} = Nostrum.Api.create_message(msg.channel_id, "発言があったためcloseが中止されました。(このメッセージは10秒後に消去されます。)")
+        :timer.sleep(1000 * 10)
+        Nostrum.Api.delete_message(message)
+        :ok
+    end
+  end
+
   def handle_event({:READY, _, ws}) do
     Api.update_shard_status(ws.shard_pid, "dnd", "!help", 0)
   end
