@@ -4,31 +4,24 @@ defmodule Dqs.Command do
   alias Nostrum.Struct.Guild.Member
   @prefix Application.get_env(:dqs, :prefix)
   @open_category_id Application.get_env(:dqs, :open_category_id)
+  require Dqs.Macro
+  import Dqs.Macro
 
   def handle(%{content: @prefix <> "set " <> _} = msg) do
-    {:ok, channel} = Cache.get_channel(msg.channel_id)
-    if channel.parent_id == @open_category_id do
+    limited_command msg do
       Dqs.Command.Modify.handle(msg)
-    else
-      create_message(msg.channel_id, "このチャンネルでは使用できません。")
     end
   end
 
   def handle(%{content: @prefix <> "tag " <> _} = msg) do
-    {:ok, channel} = Cache.get_channel(msg.channel_id)
-    if channel.parent_id == @open_category_id do
+    limited_command msg do
       Dqs.Command.Tag.handle(msg)
-    else
-      create_message(msg.channel_id, "このチャンネルでは使用できません。")
     end
   end
 
   def handle(%{content: @prefix <> "close"} = msg) do
-    {:ok, channel} = Cache.get_channel(msg.channel_id)
-    if channel.parent_id == @open_category_id do
+    limited_command msg do
       Dqs.Command.Close.handle(msg)
-    else
-      create_message(msg.channel_id, "このチャンネルでは使用できません。")
     end
   end
 
@@ -37,11 +30,8 @@ defmodule Dqs.Command do
     member = Map.get(guild.members, msg.author.id)
     member_perms = Member.guild_permissions(member, guild)
     if :manage_channels in member_perms do
-      {:ok, channel} = Cache.get_channel(msg.channel_id)
-      if channel.parent_id == @open_category_id do
+      limited_command msg do
         Dqs.Command.Trash.handle(msg)
-      else
-        create_message(msg.channel_id, "このチャンネルでは使用できません。")
       end
     else
       create_message(msg.channel_id, ~s/<@#{msg.author.id}>, チャンネル管理権限を持っていないため使用できません。/)
