@@ -34,7 +34,7 @@ defmodule Dqs.Command.Tag do
       Nostrum.Api.create_message(msg.channel_id, "タグを削除しました。")
     else
       e -> IO.inspect(e)
-           Nostrum.Api.create_message(msg.channel_id, "タグを追加できませんでした。時間を開けて再度お試しください。")
+           Nostrum.Api.create_message(msg.channel_id, "タグを削除できませんでした。時間を開けて再度お試しください。")
     end
   end
 
