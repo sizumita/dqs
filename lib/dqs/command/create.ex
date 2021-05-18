@@ -55,7 +55,7 @@ defmodule Dqs.Command.Create do
   end
 
   def send_blank_message(alloc_channel) do
-    message = "⠀" <> String.duplicate("\n", 30) <> "⠀"
+    message = "\u2800" <> String.duplicate("\n", 30) <> "\u2800"
     Nostrum.Api.create_message(alloc_channel.id, message)
   end
 
