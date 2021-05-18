@@ -60,9 +60,9 @@ defmodule Dqs.Command do
 ```
 #{@prefix}help -> このメッセージを表示します。
 
-#{@prefix}title [タイトル] -> タイトルを新しく設定します。
-#{@prefix}content [内容] -> 質問の内容を設定します。
-(返信つきで) #{@prefix}content -> 返信元のメッセージを質問の内容として設定します。
+#{@prefix}set title [タイトル] -> タイトルを新しく設定します。
+#{@prefix}set content [内容] -> 質問の内容を設定します。
+(返信つきで) #{@prefix}set content -> 返信元のメッセージを質問の内容として設定します。
 #{@prefix}tag add [タグ] -> タグを追加します。タグは半角の空白で区切って複数指定できます。
 #{@prefix}tag remove [タグ] -> タグを削除します。タグは半角の空白で区切って複数指定できます。
 
