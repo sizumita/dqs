@@ -54,7 +54,7 @@ defmodule Dqs.Command do
 
   def handle(%{content: @prefix <> "help"} = msg) do
     content = ~s/
-<##{System.get_env("QUESTION_CHANNEL_ID")}>に質問のタイトルを投稿すると、自動的に質問チャンネルが作成されます。
+<##{Application.get_env(:dqs, :board_channel_id)}>に質問のタイトルを投稿すると、自動的に質問チャンネルが作成されます。
 
 コマンド一覧
 ```
@@ -65,6 +65,9 @@ defmodule Dqs.Command do
 (返信つきで) #{@prefix}content -> 返信元のメッセージを質問の内容として設定します。
 #{@prefix}tag add [タグ] -> タグを追加します。タグは半角の空白で区切って複数指定できます。
 #{@prefix}tag remove [タグ] -> タグを削除します。タグは半角の空白で区切って複数指定できます。
+
+#{@prefix}find [検索する文字列] -> 質問を検索します。質問のタイトルから検索が可能です。AND,ORやマイナス検索が可能です。
+#{@prefix}find tag [検索するタグ] -> タグを検索します。空白を挟んで複数のタグを指定すると、AND検索になります。
 
 #{@prefix}close -> 質問を終了します。
 ```
