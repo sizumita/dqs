@@ -38,10 +38,10 @@ defmodule Dqs.Command.Search do
                        |> put_description(~s/`#{tags_text}`の検索結果(#{Enum.count(questions)}件)を表示します。\n\n/ <> first.description)
         [first_edited | rest]
       [] ->
-        %Nostrum.Struct.Embed{}
+        [%Nostrum.Struct.Embed{}
           |> put_title("検索結果")
           |> put_color(0xff0000)
-          |> put_description("一件も見つかりませんでした。")
+          |> put_description("一件も見つかりませんでした。")]
     end
   end
 
