@@ -30,11 +30,19 @@ defmodule Dqs.Command.Search do
       ~s/[**#{question.name}**](https:\/\/discord.com\/channels\/#{@guild_id}\/#{question.channel_id}\/#{question.info.original_message_id})\n\n/
     end)
 
-    [first | rest] = Dqs.Embed.make_search_result_embed([], links) |> Enum.reverse()
-    first_edited = first
-      |> put_title("検索結果")
-      |> put_description(~s/`#{tags_text}`の検索結果(#{Enum.count(questions)}件)を表示します。\n\n/ <> first.description)
-    [first_edited | rest]
+    embeds = Dqs.Embed.make_search_result_embed([], links) |> Enum.reverse()
+    case embeds do
+      [first | rest] ->
+        first_edited = first
+                       |> put_title("検索結果")
+                       |> put_description(~s/`#{tags_text}`の検索結果(#{Enum.count(questions)}件)を表示します。\n\n/ <> first.description)
+        [first_edited | rest]
+      [] ->
+        %Nostrum.Struct.Embed{}
+          |> put_title("検索結果")
+          |> put_color(0xff0000)
+          |> put_description("一件も見つかりませんでした。")
+    end
   end
 
   def send_embeds(channel_id, []), do: :ok
