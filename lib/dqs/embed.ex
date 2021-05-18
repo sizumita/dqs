@@ -18,4 +18,29 @@ defmodule Dqs.Embed do
     |> put_field("タグ", ~s/`#{question.tag |> Enum.join("`, `")}`/)
     |> put_color(color)
   end
+
+  def make_search_result_embed(texts, []) do
+    texts |>
+      Enum.map(
+        fn text ->
+          %Nostrum.Struct.Embed{}
+          |> put_description(text)
+          |> put_color(0x00bfff)
+        end
+      )
+  end
+
+  def make_search_result_embed(texts, links) do
+    case texts do
+      [] ->
+        [first | rest] = links
+        make_search_result_embed([first], rest)
+      [first | rest] ->
+        if String.length(first) > 1500 do
+          make_search_result_embed([hd(links) | [first | rest]], tl(links))
+        else
+          make_search_result_embed([(first <> hd(links)) | rest], tl(links))
+        end
+    end
+  end
 end

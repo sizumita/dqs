@@ -12,7 +12,7 @@ defmodule Dqs.Command.Search do
       preload: [:info],
       where: fragment("? @> ?::varchar[]", p.tag, ^tags)
     )
-    Nostrum.Api.create_message(msg.channel_id, embed: make_embed(Repo.all(query), tags_text))
+    send_embeds(msg.channel_id, make_embeds(Repo.all(query), tags_text))
   end
 
   def handle(%{content: @prefix <> "find " <> text} = msg) do
@@ -21,20 +21,31 @@ defmodule Dqs.Command.Search do
       preload: [:info],
       where: fragment("name &@~ ?", ^text)
     )
-    Nostrum.Api.create_message(msg.channel_id, embed: make_embed(Repo.all(query), text))
+    send_embeds(msg.channel_id, make_embeds(Repo.all(query), text))
   end
 
-  def make_embed(questions, tags_text) do
-    text = questions
-      |> Enum.reduce("",
-           fn (question, acc) ->
-             acc <>
-             ~s/[**#{question.name}**](https:\/\/discord.com\/channels\/#{@guild_id}\/#{question.channel_id}\/#{question.info.original_message_id})\n/
-           end
-         )
-    %Nostrum.Struct.Embed{}
+  def make_embeds(questions, tags_text) do
+    links = questions
+      |> Enum.map(fn question ->
+      ~s/[**#{question.name}**](https:\/\/discord.com\/channels\/#{@guild_id}\/#{question.channel_id}\/#{question.info.original_message_id})\n\n/
+    end)
+
+    [first | rest] = Dqs.Embed.make_search_result_embed([], links) |> Enum.reverse()
+    first_edited = first
       |> put_title("検索結果")
-      |> put_color(0x00bfff)
-      |> put_description(~s/`#{tags_text}`の検索結果(#{Enum.count(questions)}件)を表示します。\n\n/ <> text)
+      |> put_description(~s/`#{tags_text}`の検索結果(#{Enum.count(questions)}件)を表示します。\n\n/ <> first.description)
+    [first_edited | rest]
+  end
+
+  def send_embeds(channel_id, []), do: :ok
+
+  def send_embeds(channel_id, embeds) do
+    [first | rest] = embeds
+    case Nostrum.Api.create_message(channel_id, embed: first) do
+      {:ok, _} -> send_embeds(channel_id, rest)
+      _ ->
+        :timer.sleep(1000 * 5)
+        send_embeds(channel_id, embeds)
+    end
   end
 end
