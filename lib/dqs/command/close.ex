@@ -24,13 +24,13 @@ defmodule Dqs.Command.Close do
   end
 
   def handle(msg) do
-    question = get_current_question(msg.channel_id)
+    question = Dqs.Action.get_current_question(msg.channel_id)
 
     with {:ok} <- delay(msg.channel_id),
          false <- Dqs.Ratelimit.ratelimit?(msg.channel_id),
          {:ok, _channel} <- edit_channel(msg.channel_id),
-         {:ok, question} <- close_question(question),
-         {:ok, _message} <- update_info_message(question)
+         {:ok, question} <- Dqs.Action.close_question(question),
+         {:ok, _message} <- Dqs.Action.update_info_message(question)
     do
       Nostrum.Api.create_message(msg.channel_id, "closeされました。")
     else
@@ -45,27 +45,11 @@ defmodule Dqs.Command.Close do
   end
 
   def update_info_message(question) do
-    info = question.info
     {:ok, user} = Cache.get_user(question.issuer_id)
-    Nostrum.Api.edit_message(
-      @board_channel_id,
-      info.info_message_id,
-      embed: Dqs.Embed.make_info_embed(user, question, question.info, 0xff3333)
+    Dqs.Action.update_info_message(
+      question,
+      Dqs.Embed.make_info_embed(user, question, question.info, 0xff3333)
     )
-  end
-
-  def close_question(question) do
-    question |> Ecto.Changeset.change(status: "closed") |> Repo.update
-  end
-
-  def get_current_question(channel_id) do
-    from(
-      question in Dqs.Question,
-      where: question.channel_id == ^channel_id and question.status == "open",
-      preload: [:info],
-      select: question
-    )
-    |> Repo.one()
   end
 
   def edit_channel(channel_id) do

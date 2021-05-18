@@ -60,11 +60,7 @@ defmodule Dqs.Command.Modify do
   def update_info_message(question) do
     info = question.info
     {:ok, user} = Cache.get_user(question.issuer_id)
-    Nostrum.Api.edit_message(
-      @board_channel_id,
-      info.info_message_id,
-      embed: Dqs.Embed.make_info_embed(user, question, question.info)
-    )
+    Dqs.Action.update_info_message(question, Dqs.Embed.make_info_embed(user, question, question.info))
   end
 
   def set_content(msg, content) do

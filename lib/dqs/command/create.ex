@@ -41,7 +41,12 @@ defmodule Dqs.Command.Create do
 
   def edit_channel(name, alloc_channel) do
     {:ok, parent_channel} = Dqs.Cache.get_channel(@open_category_id)
-    Nostrum.Api.modify_channel(alloc_channel.id, name: name, parent_id: @open_category_id, permission_overwrites: parent_channel.permission_overwrites)
+    Nostrum.Api.modify_channel(
+      alloc_channel.id,
+      name: name,
+      parent_id: @open_category_id,
+      permission_overwrites: parent_channel.permission_overwrites
+    )
   end
 
   def check_duplicate(alloc_channel) do
