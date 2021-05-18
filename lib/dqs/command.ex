@@ -5,6 +5,17 @@ defmodule Dqs.Command do
   @prefix Application.get_env(:dqs, :prefix)
   @open_category_id Application.get_env(:dqs, :open_category_id)
 
+  def handle(%{content: @prefix <> "as " <> _} = msg) do
+    guild = GuildCache.get!(msg.guild_id)
+    member = Map.get(guild.members, msg.author.id)
+    member_perms = Member.guild_permissions(member, guild)
+    if :manage_channels in member_perms do
+      Dqs.Command.As.handle(msg)
+    else
+      create_message(msg.channel_id, ~s/<@#{msg.author.id}>, チャンネル管理権限を持っていないため使用できません。/)
+    end
+  end
+
   def handle(%{content: @prefix <> "set " <> _} = msg) do
     {:ok, channel} = Cache.get_channel(msg.channel_id)
     if channel.parent_id == @open_category_id do

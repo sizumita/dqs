@@ -40,9 +40,9 @@ defmodule Dqs.Command.Modify do
       do
       send_message(msg, "変更しました。")
     else
-      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりアップデートできませんでした。しばらく経ってから再度お試しください。")
+      true -> Dqs.Error.rate_limit(msg)
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
-        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりアップデートできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
+        Dqs.Error.retry_after(msg, retry_after)
         Dqs.Ratelimit.wait_ratelimit(msg.channel_id, retry_after)
       e -> send_message(msg, "アップデートができませんでした。再度お試しください。")
            IO.inspect(e)
@@ -83,9 +83,9 @@ defmodule Dqs.Command.Modify do
       do
       send_message(msg, "変更しました。")
     else
-      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりアップデートできませんでした。しばらく経ってから再度お試しください。")
+      true -> Dqs.Error.rate_limit(msg)
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
-        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりアップデートできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
+        Dqs.Error.retry_after(msg, retry_after)
       _error -> send_message(msg, "アップデートができませんでした。再度お試しください。")
     end
   end
