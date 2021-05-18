@@ -27,7 +27,7 @@ defmodule Dqs.Command.Create do
                  {:ok, info_message} <- send_info_message(msg, question_message, question),
                  {:ok, _question_info} <- create_question_info(question_message, question, info_message)
               do
-              send_blank_message(msg, first)
+              send_blank_message(first)
               send_notice_message(msg, first)
             else
               {:error, %Nostrum.Error.ApiError{status_code: 429}} -> try_transaction(msg, rest, name)
@@ -54,7 +54,7 @@ defmodule Dqs.Command.Create do
     end
   end
 
-  def send_blank_message(msg, alloc_channel) do
+  def send_blank_message(alloc_channel) do
     message = "⠀" <> String.duplicate("\n", 30) <> "⠀"
     Nostrum.Api.create_message(alloc_channel.id, message)
   end
