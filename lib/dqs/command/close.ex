@@ -9,14 +9,14 @@ defmodule Dqs.Command.Close do
   def delay(channel_id) do
     case Cachex.get(:delay_close, to_string(channel_id)) do
       { :ok, nil } ->
-        Nostrum.Api.create_message(channel_id, "1時間後にcloseされます。")
+        {:ok, close_message} = Nostrum.Api.create_message(channel_id, "1時間後にcloseされます。")
         Cachex.put(:delay_close, to_string(channel_id), true)
         :timer.sleep(1000 * 60 * 60)
         case Cachex.get(:delay_close, to_string(channel_id)) do
           { :ok, nil } -> {:error, :canceled}
           _ ->
             Cachex.del(:delay_close, to_string(channel_id))
-            {:ok}
+            {:ok, close_message}
         end
       _ ->
         {:error, :already_closing}
@@ -26,13 +26,13 @@ defmodule Dqs.Command.Close do
   def handle(msg) do
     question = get_current_question(msg.channel_id)
 
-    with {:ok} <- delay(msg.channel_id),
+    with {:ok, close_message} <- delay(msg.channel_id),
          false <- Dqs.Ratelimit.ratelimit?(msg.channel_id),
          {:ok, _channel} <- edit_channel(msg.channel_id),
          {:ok, question} <- close_question(question),
          {:ok, _message} <- update_info_message(question)
     do
-      Nostrum.Api.create_message(msg.channel_id, "closeされました。")
+      Nostrum.Api.edit_message(close_message, "closeされました。")
     else
       true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりcloseできませんでした。しばらく経ってから再度お試しください。")
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
