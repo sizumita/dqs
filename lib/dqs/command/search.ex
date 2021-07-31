@@ -10,7 +10,7 @@ defmodule Dqs.Command.Search do
     query = from(
       p in Dqs.Question,
       preload: [:info],
-      where: fragment("? @> ?::varchar[]", p.tag, ^tags)
+      where: fragment("? @> ?::varchar[] AND ? != 'erased'", p.tag, ^tags, p.status)
     )
     send_embeds(msg.channel_id, make_embeds(Repo.all(query), tags_text))
   end
@@ -19,7 +19,7 @@ defmodule Dqs.Command.Search do
     query = from(
       p in Dqs.Question,
       preload: [:info],
-      where: fragment("name &@~ ?", ^text)
+      where: fragment("name &@~ ? AND ? != 'erased'", ^text, p.status)
     )
     send_embeds(msg.channel_id, make_embeds(Repo.all(query), text))
   end
