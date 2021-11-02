@@ -13,13 +13,13 @@ defmodule Dqs.Command.Trash do
          {:ok, question} <- trash_question(question),
          {:ok} <- delete_info_message(question)
       do
-      Nostrum.Api.create_message(msg.channel_id, "closeされました。")
+      Nostrum.Api.create_message(msg.channel_id, "trashされました。")
     else
-      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりcloseできませんでした。しばらく経ってから再度お試しください。")
+      true -> Nostrum.Api.create_message(msg.channel_id, "レートリミットによりtrashできませんでした。しばらく経ってから再度お試しください。")
       {:error, %Nostrum.Error.ApiError{status_code: 429, response: %{retry_after: retry_after}}} ->
-        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりcloseできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
+        Nostrum.Api.create_message(msg.channel_id, ~s/レートリミットによりtrashできませんでした。約#{Float.floor(retry_after/60000)}分後に再度行ってください。/)
         Dqs.Ratelimit.wait_ratelimit(msg.channel_id, retry_after)
-      e -> Nostrum.Api.create_message(msg.channel_id, "なんらかの理由でcloseできませんでした。再度お試しください。")
+      e -> Nostrum.Api.create_message(msg.channel_id, "なんらかの理由でtrashできませんでした。再度お試しください。")
            IO.inspect(e)
     end
   end
